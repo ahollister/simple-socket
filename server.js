@@ -1,19 +1,23 @@
+'use strict';
 
-var WebSocketServer = require('ws').Server;
+const express = require('express');
+const SocketServer = require('ws').Server;
+const path = require('path');
 
-// Forward arg options to WebSockerServer
-var wssOptions = require('minimist')(process.argv);
-delete wssOptions['_'];
+const PORT = process.env.PORT || 3000;
+const INDEX = path.join(__dirname, 'index.html');
 
-var wss = new WebSocketServer(wssOptions);
+const server = express()
+  .use((req, res) => res.sendFile(INDEX) )
+  .listen(PORT, () => console.log(`Listening on ${ PORT }`));
 
-/**
- *  Broadcasts incoming data to all active connections
- */
-wss.on('connection', function (conn) {
-    conn.on('message', function (data) {
-        wss.clients.forEach(function each(client) {
-            client.send(data);
-        });
-    });
+const wss = new SocketServer({ server });
+
+wss.on('connection', (conn) => {
+  conn.on('message', function(data) {
+      wss.clients.forEach(function each(client) {
+          client.send(data);
+      });
+  });
+  conn.on('close', () => console.log('Client disconnected'));
 });
