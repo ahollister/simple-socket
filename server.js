@@ -14,14 +14,9 @@ const server = express()
 const wss = new SocketServer({ server });
 
 wss.on('connection', (conn) => {
-  console.log(wss.clients)
   conn.on('message', function(data) {
       wss.clients.forEach(function each(client) {
-          let response = {
-            clients: wss.clients,
-            data
-          }
-          client.send(JSON.stringify(response));
+          client.send(data);
       });
   });
   conn.on('close', () => console.log('Client disconnected'));
